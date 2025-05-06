@@ -1,2 +1,41 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Node.js - Backend
+/backend/node_modules/
+/backend/dist/
+/backend/.env
+/backend/.env.local
+/backend/.env.*.local
+/backend/.next/
+/backend/.nuxt/
+backend/.idea
+/backend/.vscode
+/backend/logs/
+/backend/tmp/
+/backend/package-lock.json
+
+# Frontend - Node.js
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.*.local
+/frontend/.next/
+/frontend/.nuxt/
+/frontend/.idea
+/frontend/.vscode
+/frontend/logs/
+/frontend/tmp/
+/frontend/package-lock.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Other
+.idea/
+.vscode/
