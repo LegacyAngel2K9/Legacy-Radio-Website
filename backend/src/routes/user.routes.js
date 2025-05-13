@@ -6,8 +6,6 @@ const { authJwt } = require('../middleware');
 // User routes
 router.get('/profile', [authJwt.verifyToken], userController.getUserProfile);
 router.put('/profile', [authJwt.verifyToken], userController.updateUserProfile);
-router.get('/devices', [authJwt.verifyToken], userController.getUserDevices);
-router.post('/devices', [authJwt.verifyToken], userController.addUserDevice);
 
 // Admin routes
 router.get('/', [authJwt.verifyToken, authJwt.isAdmin], userController.getAllUsers);

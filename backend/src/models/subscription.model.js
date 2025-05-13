@@ -1,8 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const User = require('./user.model');
-  const Server = require('./server.model');
-
-  const Subscription = sequelize.define("subscription", {
+  const Subscription = sequelize.define("subscriptions", {
     id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
@@ -12,7 +9,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
-        model: User,
+        model: 'users', // Use table name here instead of model reference
         key: 'id',
       },
       onUpdate: 'CASCADE',
@@ -22,17 +19,17 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
-        model: Server,
+        model: 'servers', // Use table name here instead of model reference
         key: 'id',
       },
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
     },
-    startDate: {
+    start_date: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW
     },
-    endDate: {
+    end_date: {
       type: Sequelize.DATE
     },
     expires_at: {
@@ -53,8 +50,10 @@ module.exports = (sequelize, Sequelize) => {
     },
   });
 
-  Subscription.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
-  Subscription.belongsTo(Server, { foreignKey: 'server_id', as: 'server' });
+  Subscription.associate = function(models) {
+    Subscription.belongsTo(models.User, { foreignKey: 'user_id', as: 'users' });
+    Subscription.belongsTo(models.Server, { foreignKey: 'server_id', as: 'servers' });
+  };
 
   return Subscription;
 };
