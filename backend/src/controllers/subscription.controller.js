@@ -1,13 +1,13 @@
 const db = require('../models');
-const Subscription = db.subscriptions;
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const paypal = require('@paypal/checkout-server-sdk');
+const Subscription = db.Subscriptions;
+// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+// const paypal = require('@paypal/checkout-server-sdk');
 
 // PayPal client setup
-const environment = process.env.NODE_ENV === 'production'
-  ? new paypal.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
-  : new paypal.core.SandboxEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET);
-const paypalClient = new paypal.core.PayPalHttpClient(environment);
+// const environment = process.env.NODE_ENV === 'production'
+//   ? new paypal.core.LiveEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET)
+//   : new paypal.core.SandboxEnvironment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET);
+// const paypalClient = new paypal.core.PayPalHttpClient(environment);
 
 // Subscription plans data
 const subscriptionPlans = [
@@ -17,7 +17,7 @@ const subscriptionPlans = [
     price: 0,
     features: ['Basic VoIP', 'Limited to 10 calls per day', '1 device'],
     stripePriceId: '',
-    paypalPlanId: ''
+    // paypalPlanId: ''
   },
   {
     id: 'basic',
@@ -25,7 +25,7 @@ const subscriptionPlans = [
     price: 9.99,
     features: ['Unlimited VoIP', 'Group calls (up to 3 people)', '2 devices'],
     stripePriceId: 'price_basic123',
-    paypalPlanId: 'P-basic123'
+    // paypalPlanId: 'P-basic123'
   },
   {
     id: 'premium',
@@ -33,7 +33,7 @@ const subscriptionPlans = [
     price: 19.99,
     features: ['Unlimited VoIP', 'Group calls (up to 10 people)', '5 devices', 'Priority support'],
     stripePriceId: 'price_premium123',
-    paypalPlanId: 'P-premium123'
+    // paypalPlanId: 'P-premium123'
   },
   {
     id: 'enterprise',
@@ -41,7 +41,7 @@ const subscriptionPlans = [
     price: 49.99,
     features: ['Unlimited VoIP', 'Unlimited group calls', 'Unlimited devices', 'Admin panel', '24/7 support'],
     stripePriceId: 'price_enterprise123',
-    paypalPlanId: 'P-enterprise123'
+    // paypalPlanId: 'P-enterprise123'
   }
 ];
 
@@ -52,7 +52,7 @@ exports.getSubscriptionPlans = (req, res) => {
 exports.getUserSubscription = async (req, res) => {
   try {
     const subscription = await Subscription.findOne({
-      where: { userId: req.userId }
+      where: { user_id: req.user_id }
     });
 
     if (!subscription) {
@@ -87,7 +87,7 @@ exports.createSubscription = async (req, res) => {
 
     // Check if user already has a subscription
     let subscription = await Subscription.findOne({
-      where: { userId: req.userId }
+      where: { user_id: req.user_id }
     });
 
     let paymentId = '';
@@ -116,11 +116,11 @@ exports.createSubscription = async (req, res) => {
         paymentMethod: plan.price > 0 ? req.body.paymentMethod : 'none',
         paymentId: paymentId
       }, {
-        where: { userId: req.userId }
+        where: { user_id: req.user_id }
       });
     } else {
       await Subscription.create({
-        userId: req.userId,
+        user_id: req.user_id,
         plan: req.body.planId,
         startDate: new Date(),
         endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
@@ -144,7 +144,7 @@ exports.createSubscription = async (req, res) => {
 exports.cancelSubscription = async (req, res) => {
   try {
     const subscription = await Subscription.findOne({
-      where: { userId: req.userId }
+      where: { user_id: req.user_id }
     });
 
     if (!subscription) {
@@ -162,7 +162,7 @@ exports.cancelSubscription = async (req, res) => {
     await Subscription.update({
       status: 'cancelled'
     }, {
-      where: { userId: req.userId }
+      where: { user_id: req.user_id }
     });
 
     res.status(200).json({ message: "Subscription cancelled successfully" });

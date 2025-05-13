@@ -1,22 +1,33 @@
 const dbConfig = require('../config/db.config.js');
 const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize(
-  dbConfig.DB,
-  dbConfig.USER,
-  dbConfig.PASSWORD,
-  {
-    host: dbConfig.HOST,
-    dialect: dbConfig.dialect,
-    operatorsAliases: 0,
-    pool: {
-      max: dbConfig.pool.max,
-      min: dbConfig.pool.min,
-      acquire: dbConfig.pool.acquire,
-      idle: dbConfig.pool.idle
+// Determine which environment we're in
+const env = process.env.NODE_ENV || 'development';
+const config = dbConfig[env];
+
+// Initialize Sequelize with the appropriate config
+let sequelize;
+if (config.dialect === 'sqlite') {
+  sequelize = new Sequelize({
+    dialect: config.dialect,
+    storage: config.storage,
+    host: config.host,
+    logging: config.logging
+  });
+} else {
+  sequelize = new Sequelize(
+    config.database,
+    config.username,
+    config.password,
+    {
+      host: config.host,
+      port: config.port,
+      dialect: config.dialect,
+      logging: config.logging,
+      dialectOptions: config.dialectOptions
     }
-  }
-);
+  );
+}
 
 const db = {};
 
@@ -24,17 +35,17 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 // Import models
-db.users = require('./user.model.js')(sequelize, Sequelize);
-db.server = require('./server.model.js')(sequelize, Sequelize);
-db.subscriptions = require('./subscription.model.js')(sequelize, Sequelize);
-db.discountCode = require('./discountCode.model.js')(sequelize, Sequelize);
-db.discountCodeUsage = require('./discountCodeUsage.model.js')(sequelize, Sequelize);
+db.User = require('./user.model.js')(sequelize, Sequelize);
+db.Server = require('./server.model.js')(sequelize, Sequelize);
+db.Subscriptions = require('./subscription.model.js')(sequelize, Sequelize);
+db.DiscountCode = require('./discountCode.model.js')(sequelize, Sequelize);
+db.DiscountCodeUsage = require('./discountCodeUsage.model.js')(sequelize, Sequelize);
 
 // Define relationships
-db.subscriptions.belongsTo(db.users);
-db.subscriptions.belongsTo(db.server);
-db.discountCode.belongsTo(db.users);
-db.discountCode.belongsTo(db.discountCodeUsage);
-db.discountCodeUsage.belongsTo(db.users);
+db.Subscriptions.belongsTo(db.User);
+db.Subscriptions.belongsTo(db.Server);
+db.DiscountCode.belongsTo(db.User);
+db.DiscountCode.belongsTo(db.DiscountCodeUsage);
+db.DiscountCodeUsage.belongsTo(db.User);
 
 module.exports = db;

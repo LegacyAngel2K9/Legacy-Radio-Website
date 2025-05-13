@@ -1,6 +1,5 @@
 const db = require('../models');
-const User = db.users;
-const Device = db.devices;
+const User = db.User;
 
 exports.getUserProfile = async (req, res) => {
   try {

@@ -1,8 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-    const DiscountCode = require('./discountCode.model');
-    const User = require('./user.model');
-    
-    const DiscountCodeUsage = sequelize.define("discountCodeUsage", {
+    const DiscountCodeUsage = sequelize.define("discount_code_usages", {
         id: {
             type: Sequelize.INTEGER,
             primaryKey: true,
@@ -12,7 +9,7 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.INTEGER,
             allowNull: false,
             references: {
-                model: DiscountCode,
+                model: 'discount_codes',
                 key: 'id',
             },
             onUpdate: 'CASCADE',
@@ -22,7 +19,7 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.INTEGER,
             allowNull: false,
             references: {
-                model: User,
+                model: 'users',
                 key: 'id',
             },
             onUpdate: 'CASCADE',
@@ -36,10 +33,26 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.DATE,
             defaultValue: Sequelize.NOW,
         },
+    }, {
+        timestamps: false,
+        tableName: 'discount_code_usages'
     });
 
-    DiscountCodeUsage.belongsTo(DiscountCode, { foreignKey: 'discount_code_id', as: 'discountCode' });
-    DiscountCodeUsage.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+    DiscountCodeUsage.associate = function(models) {
+        DiscountCodeUsage.belongsTo(models.DiscountCode, { 
+            foreignKey: 'discount_code_id', 
+            as: 'discount_code',
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
+        });
+        
+        DiscountCodeUsage.belongsTo(models.User, { 
+            foreignKey: 'user_id', 
+            as: 'user',
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
+        });
+    };
 
     return DiscountCodeUsage;
 };

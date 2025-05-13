@@ -1,9 +1,13 @@
 module.exports = (sequelize, Sequelize) => {
-    const Server = sequelize.define("server", {
+    const Server = sequelize.define("servers", {
         id: {
             type: Sequelize.INTEGER,
             primaryKey: true,
             autoIncrement: true
+        },
+        user_id: {
+            type: Sequelize.INTEGER,
+            allowNull: false
         },
         name: {
             type: Sequelize.STRING,
@@ -17,6 +21,13 @@ module.exports = (sequelize, Sequelize) => {
             defaultValue: Sequelize.NOW,
         },
     });
+
+    Server.associate = (models) => {
+        Server.belongsTo(models.User, {
+            foreignKey: 'user_id',
+            onDelete: 'SET NULL',
+        });
+    };
 
     return Server;
 };
