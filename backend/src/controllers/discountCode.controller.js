@@ -87,7 +87,11 @@ exports.getAllDiscountCodes = async (req, res) => {
             order: [['created_at', 'DESC']],
             include: [
                 { model: Server, as: 'server' },
-                { model: User, as: 'creator' },
+                {
+                    model: User, as: 'creator', attributes: {
+                        exclude: ['password']
+                    }
+                },
                 { model: DiscountCodeUsage, as: 'discount_code_usages' },
             ],
         });
@@ -110,7 +114,11 @@ exports.getDiscountCodeById = async (req, res) => {
         const discountCode = await DiscountCode.findByPk(req.params.id, {
             include: [
                 { model: Server, as: 'server' },
-                { model: User, as: 'creator' },
+                {
+                    model: User, as: 'creator', attributes: {
+                        exclude: ['password']
+                    }
+                },
                 { model: DiscountCodeUsage, as: 'discount_code_usages' },
             ],
         });

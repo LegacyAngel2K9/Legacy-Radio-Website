@@ -9,7 +9,9 @@ exports.getServers = async (req, res) => {
         const servers = await Server.findAll({
             order: [['created_at', 'DESC']],
             include: [
-                { model: User, as: 'user' }
+                { model: User, as: 'user',  attributes: { 
+                    exclude: ['password']
+                } }
             ]
         }, );
 
@@ -30,7 +32,9 @@ exports.getServerById = async (req, res) => {
     try {
         const server = await Server.findByPk(req.params.id, {
             include: [
-                { model: User, as: 'user' }
+                { model: User, as: 'user',  attributes: { 
+                    exclude: ['password']
+                } }
             ]
         }, );
 

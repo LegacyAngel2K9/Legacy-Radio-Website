@@ -43,15 +43,6 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,
     },
-  }, {
-    defaultScope: {
-      attributes: { exclude: ['password'] }
-    },
-    scopes: {
-      withPassword: {
-        attributes: {},
-      }
-    }
   });
 
   return User;
