@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const subscriptionRoutes = require('./routes/subscription.routes');
 const serverRoutes = require('./routes/server.routes');
+const discountCodeRoutes = require('./routes/discountCode.routes');
 
 // Import database connection
 const db = require('./models');
@@ -17,7 +18,7 @@ const db = require('./models');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Middlewares
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
@@ -33,19 +34,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/servers', serverRoutes);
+app.use('/api/discount-codes', discountCodeRoutes);
 
 app.get('/', (req, res) => {
-  res.json(`Welcome to ${process.env.APP_NAME}`);
-});
-
-app.get('/users', async (req, res) => {
-  try {
-    const users = await db.User.findAll();
-    res.json(users);
-  } catch (err) {
-    console.error('Error fetching users:', err);
-    res.status(500).json({ message: 'Error fetching users', error: err.message });
-  }
+  return res.json({
+    status: true,
+    message: `Welcome to ${process.env.APP_NAME}: listening to port ${PORT}`
+  });
 });
 
 // Error handling middleware

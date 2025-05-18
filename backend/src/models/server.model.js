@@ -27,6 +27,11 @@ module.exports = (sequelize, Sequelize) => {
             foreignKey: 'user_id',
             onDelete: 'SET NULL',
         });
+
+        DiscountCode.hasMany(models.Server, { 
+            foreignKey: 'server_id', 
+            as: 'server'
+        });
     };
 
     return Server;

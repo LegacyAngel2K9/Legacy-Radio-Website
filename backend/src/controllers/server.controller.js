@@ -1,23 +1,66 @@
 const db = require('../models');
 const Server = db.Server;
+const User = db.User;
 const { Op } = require('sequelize');
+const apiResponse = require('../utils/apiResponse');
 
 exports.getServers = async (req, res) => {
     try {
-        const servers = await Server.findAll();
+        const servers = await Server.findAll({
+            order: [['created_at', 'DESC']],
+            include: [
+                { model: User, as: 'user' }
+            ]
+        }, );
 
-        res.status(200).json({ status: true, message: 'Server Fetched Successfully', data: servers });
+        apiResponse.success(res, {
+            message: "Servers Fetched successfully",
+            data: servers, 
+        });
+
     } catch (err) {
-        res.status(500).json({
-            message: err.message || "Some error occurred while retrieving servers."
+        apiResponse.error(res, {
+            message: err.message || "Some error occurred while retrieving servers.",
+            error: err.stack,
         });
     }
 };
 
+exports.getServerById = async (req, res) => {
+    try {
+        const server = await Server.findByPk(req.params.id, {
+            include: [
+                { model: User, as: 'user' }
+            ]
+        }, );
+
+        if (!server) {
+            apiResponse.error(res, {
+                statusCode: 404,
+                message: "Server code not found."
+            });
+        }        
+
+        apiResponse.success(res, {
+            message: "Server Fetched successfully",
+            data: server, 
+        });
+
+    } catch (err) {
+        apiResponse.error(res, {
+            message: err.message || "Some error occurred while retrieving server.",
+            error: err.stack,
+        });
+    }
+}
+
 exports.createServer = async (req, res) => {
     try {
         if (!req.body.name) {
-            return res.status(400).json({ status: false, message: "The name field are required." });
+            return apiResponse.validationError(res, {
+                message: "Invalid input.",
+                errors: { name: "Must be a valid email" },
+            });
         }
 
         const serverExists = await Server.findOne({
@@ -25,7 +68,10 @@ exports.createServer = async (req, res) => {
         });
 
         if (serverExists) {
-            return res.status(409).json({ status: false, message: "The server with this name already exists." });
+            return apiResponse.validationError(res, {
+                message: "Invalid input.",
+                errors: { name: "The server with this name already exists." },
+            });
         }
 
         const server = {
@@ -36,15 +82,16 @@ exports.createServer = async (req, res) => {
 
         const data = await Server.create(server);
 
-        res.status(201).json({
-            status: true,
-            message: "Server added successfully.",
-            server: data
+        apiResponse.success(res, {
+            statusCode: 201,
+            message: "Server added successfully",
+            data: data
         });
 
     } catch (err) {
-        res.status(500).json({
-            message: err.message || "Some error occurred while creating a Server."
+        apiResponse.error(res, {
+            message: err.message || "Some error occurred while retrieving servers.",
+            error: err.stack,
         });
     }
 };
@@ -52,13 +99,19 @@ exports.createServer = async (req, res) => {
 exports.updateServer = async (req, res) => {
     try {
         if (!req.body.name) {
-            return res.status(400).json({ status: false, message: "The name field are required." });
+            return apiResponse.validationError(res, {
+                message: "Invalid input.",
+                errors: { name: "The name field are required." },
+            });
         }
 
         const server = await Server.findByPk(req.params.id);
 
         if (!server) {
-            return res.status(404).json({ status: false, message: "Server not found" });
+            apiResponse.error(res, {
+                statusCode: 404,
+                message: "Server not found"
+            });
         }
 
         const serverExists = await Server.findOne({
@@ -69,9 +122,9 @@ exports.updateServer = async (req, res) => {
         });
 
         if (serverExists) {
-            return res.status(409).json({
-                status: false,
-                message: "A server with this name already exists."
+            return apiResponse.validationError(res, {
+                message: "Invalid input.",
+                errors: { name: "The server with this name already exists." },
             });
         }
 
@@ -81,21 +134,21 @@ exports.updateServer = async (req, res) => {
 
         if (updated) {
             const updatedServer = await Server.findByPk(req.params.id);
-            return res.status(200).json({
-                status: true,
+            apiResponse.success(res, {
                 message: "Server updated successfully",
-                server: updatedServer
+                data: updatedServer
             });
         } else {
-            return res.status(400).json({
-                status: false,
+            apiResponse.error(res, {
+                statusCode: 500,
                 message: "Server update failed or no changes were made."
             });
         }
 
     } catch (err) {
-        res.status(500).json({
-            message: err.message || "Some error occurred while updating a Server."
+        apiResponse.error(res, {
+            message: err.message || "Some error occurred while updating server.",
+            error: err.stack,
         });
     }
 };
@@ -106,14 +159,20 @@ exports.deleteServer = async (req, res) => {
         const server = await Server.findByPk(req.params.id);
 
         if (!server) {
-            return res.status(404).json({ message: "Server not found" });
+            apiResponse.error(res, {
+                statusCode: 404,
+                message: "Server not found"
+            });
         }
 
         await Server.destroy({
             where: { id: req.params.id }
         });
 
-        res.status(200).json({ status: true, message: "Server deleted successfully" });
+        apiResponse.success(res, {
+            statusCode: 200,
+            message: "Server deleted successfully"
+        });
     } catch (err) {
         res.status(500).json({
             message: err.message || "Some error occurred while deleting the Server."
