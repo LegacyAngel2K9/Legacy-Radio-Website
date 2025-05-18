@@ -24,4 +24,4 @@ logs/
 .DS_Store
 Thumbs.db
 
-./src/database.sqlite
+src/database.sqlite
