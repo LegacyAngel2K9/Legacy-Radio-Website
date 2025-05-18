@@ -9,7 +9,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
-        model: 'users', // Use table name here instead of model reference
+        model: 'users',
         key: 'id',
       },
       onUpdate: 'CASCADE',
@@ -19,7 +19,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
-        model: 'servers', // Use table name here instead of model reference
+        model: 'servers',
         key: 'id',
       },
       onUpdate: 'CASCADE',
