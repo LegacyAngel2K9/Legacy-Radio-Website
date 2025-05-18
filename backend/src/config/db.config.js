@@ -7,19 +7,6 @@ module.exports = {
     storage: process.env.DB_STORAGE || './database.sqlite',
     logging: console.log
   },
-  development2: {
-    dialect: MsSqlDialect,
-    server: 'localhost',
-    port: 1433,
-    database: 'database',
-    authentication: {
-      type: 'default',
-      options: {
-        userName: 'username',
-        password: 'password',
-      },
-    },
-  },
   production: {
     dialect: 'postgres',
     host: process.env.DB_HOST,

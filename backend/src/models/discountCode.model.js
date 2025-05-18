@@ -56,23 +56,20 @@ module.exports = (sequelize, Sequelize) => {
         tableName: 'discount_codes'
     });
 
-    // Class method for associations
     DiscountCode.associate = function(models) {
         DiscountCode.belongsTo(models.Server, { 
             foreignKey: 'server_id', 
-            as: 'server',
-            constraints: false
+            as: 'server'
         });
         
         DiscountCode.belongsTo(models.User, { 
             foreignKey: 'created_by', 
-            as: 'creator',
-            constraints: false
+            as: 'creator' 
         });
         
         DiscountCode.hasMany(models.DiscountCodeUsage, { 
             foreignKey: 'discount_code_id', 
-            as: 'usages' 
+            as: 'discount_code_usages' 
         });
     };
 
