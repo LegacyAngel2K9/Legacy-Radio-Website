@@ -1,8 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-    const Server = require('./server.model');
-    const User = require('./user.model');
-    
-    const DiscountCode = sequelize.define("discountCode", {
+    const DiscountCode = sequelize.define("discount_codes", {
         id: {
             type: Sequelize.INTEGER,
             primaryKey: true,
@@ -12,12 +9,15 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING,
             allowNull: false,
             unique: true,
+            validate: {
+                notEmpty: true
+            }
         },
         server_id: {
             type: Sequelize.INTEGER,
             allowNull: true,
             references: {
-                model: Server,
+                model: 'servers',
                 key: 'id',
             },
             onUpdate: 'CASCADE',
@@ -26,16 +26,22 @@ module.exports = (sequelize, Sequelize) => {
         expires_at: {
             type: Sequelize.DATE,
             allowNull: true,
+            validate: {
+                isDate: true
+            }
         },
         max_uses: {
             type: Sequelize.INTEGER,
             allowNull: true,
+            validate: {
+                min: 1
+            }
         },
         created_by: {
             type: Sequelize.INTEGER,
             allowNull: true,
             references: {
-                model: User,
+                model: 'users',
                 key: 'id',
             },
             onUpdate: 'CASCADE',
@@ -45,11 +51,27 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.DATE,
             defaultValue: Sequelize.NOW,
         },
+    }, {
+        timestamps: false,
+        tableName: 'discount_codes'
     });
 
-    DiscountCode.belongsTo(Server, { foreignKey: 'server_id', as: 'server' });
-    DiscountCode.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
-    DiscountCode.hasMany(require('./discountCodeUsage.model'), { foreignKey: 'discount_code_id', as: 'usages' });
+    DiscountCode.associate = function(models) {
+        DiscountCode.belongsTo(models.Server, { 
+            foreignKey: 'server_id', 
+            as: 'server'
+        });
+        
+        DiscountCode.belongsTo(models.User, { 
+            foreignKey: 'created_by', 
+            as: 'creator' 
+        });
+        
+        DiscountCode.hasMany(models.DiscountCodeUsage, { 
+            foreignKey: 'discount_code_id', 
+            as: 'discount_code_usages' 
+        });
+    };
 
     return DiscountCode;
 };

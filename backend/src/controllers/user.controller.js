@@ -1,7 +1,10 @@
 const db = require('../models');
-const User = db.users;
-const Device = db.devices;
+const User = db.User;
+const Device = db.Device;
+const { Op } = require('sequelize');
+const apiResponse = require('../utils/apiResponse');
 
+// User Profile Controllers
 exports.getUserProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.userId, {
@@ -9,92 +12,83 @@ exports.getUserProfile = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return apiResponse.error(res, {
+        statusCode: 404,
+        message: "User not found"
+      });
     }
 
-    res.status(200).json(user);
+    apiResponse.success(res, {
+      message: "User profile retrieved successfully",
+      data: user
+    });
   } catch (err) {
-    res.status(500).json({
-      message: err.message || "Some error occurred while retrieving user profile."
+    apiResponse.error(res, {
+      message: err.message || "Error retrieving user profile",
+      error: err.stack
     });
   }
 };
 
 exports.updateUserProfile = async (req, res) => {
   try {
-    const user = await User.findByPk(req.userId);
+    // Validate input
+    const allowedFields = ['first_name', 'last_name', 'email'];
+    const invalidFields = Object.keys(req.body).filter(field => !allowedFields.includes(field));
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (invalidFields.length > 0) {
+      return apiResponse.validationError(res, {
+        message: "Invalid fields in request",
+        errors: invalidFields.reduce((acc, field) => {
+          acc[field] = "Field not allowed for update";
+          return acc;
+        }, {})
+      });
     }
 
-    // Update user fields
-    await User.update(req.body, {
+    const [updated] = await User.update(req.body, {
       where: { id: req.userId }
     });
 
-    res.status(200).json({ message: "Profile updated successfully" });
-  } catch (err) {
-    res.status(500).json({
-      message: err.message || "Some error occurred while updating the profile."
-    });
-  }
-};
-
-exports.getUserDevices = async (req, res) => {
-  try {
-    const devices = await Device.findAll({
-      where: { userId: req.userId }
-    });
-
-    res.status(200).json(devices);
-  } catch (err) {
-    res.status(500).json({
-      message: err.message || "Some error occurred while retrieving devices."
-    });
-  }
-};
-
-exports.addUserDevice = async (req, res) => {
-  try {
-    // Validate request
-    if (!req.body.deviceId || !req.body.deviceType) {
-      return res.status(400).json({ message: "DeviceId and deviceType are required!" });
+    if (!updated) {
+      return apiResponse.error(res, {
+        statusCode: 404,
+        message: "User not found or no changes made"
+      });
     }
 
-    // Create a device
-    const device = {
-      userId: req.userId,
-      deviceId: req.body.deviceId,
-      deviceName: req.body.deviceName || 'Unnamed Device',
-      deviceType: req.body.deviceType,
-      lastActive: new Date(),
-      status: 'active',
-      metadata: req.body.metadata || {}
-    };
-
-    // Save device in database
-    const data = await Device.create(device);
-
-    res.status(201).json(data);
-  } catch (err) {
-    res.status(500).json({
-      message: err.message || "Some error occurred while adding the device."
-    });
-  }
-};
-
-// Admin controllers
-exports.getAllUsers = async (req, res) => {
-  try {
-    const users = await User.findAll({
+    const updatedUser = await User.findByPk(req.userId, {
       attributes: { exclude: ['password'] }
     });
 
-    res.status(200).json(users);
+    apiResponse.success(res, {
+      message: "Profile updated successfully",
+      data: updatedUser
+    });
   } catch (err) {
-    res.status(500).json({
-      message: err.message || "Some error occurred while retrieving users."
+    apiResponse.error(res, {
+      message: err.message || "Error updating profile",
+      error: err.stack
+    });
+  }
+};
+
+// Admin Controllers
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      attributes: { exclude: ['password'] },
+      order: [['createdAt', 'DESC']]
+    });
+
+    apiResponse.success(res, {
+      message: "Users retrieved successfully",
+      data: users
+    });
+  } catch (err) {
+    apiResponse.error(res, {
+      message: err.message || "Error retrieving users",
+      error: err.stack
     });
   }
 };
@@ -106,34 +100,63 @@ exports.getUserById = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return apiResponse.error(res, {
+        statusCode: 404,
+        message: "User not found"
+      });
     }
 
-    res.status(200).json(user);
+    apiResponse.success(res, {
+      message: "User retrieved successfully",
+      data: user
+    });
   } catch (err) {
-    res.status(500).json({
-      message: err.message || "Some error occurred while retrieving the user."
+    apiResponse.error(res, {
+      message: err.message || "Error retrieving user",
+      error: err.stack
     });
   }
 };
 
 exports.updateUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.params.id);
+    // Validate input
+    const allowedFields = ['first_name', 'last_name', 'email', 'role', 'status'];
+    const invalidFields = Object.keys(req.body).filter(field => !allowedFields.includes(field));
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (invalidFields.length > 0) {
+      return apiResponse.validationError(res, {
+        message: "Invalid fields in request",
+        errors: invalidFields.reduce((acc, field) => {
+          acc[field] = "Field not allowed for update";
+          return acc;
+        }, {})
+      });
     }
 
-    // Update user fields
-    await User.update(req.body, {
+    const [updated] = await User.update(req.body, {
       where: { id: req.params.id }
     });
 
-    res.status(200).json({ message: "User updated successfully" });
+    if (!updated) {
+      return apiResponse.error(res, {
+        statusCode: 404,
+        message: "User not found or no changes made"
+      });
+    }
+
+    const updatedUser = await User.findByPk(req.params.id, {
+      attributes: { exclude: ['password'] }
+    });
+
+    apiResponse.success(res, {
+      message: "User updated successfully",
+      data: updatedUser
+    });
   } catch (err) {
-    res.status(500).json({
-      message: err.message || "Some error occurred while updating the user."
+    apiResponse.error(res, {
+      message: err.message || "Error updating user",
+      error: err.stack
     });
   }
 };
@@ -143,17 +166,23 @@ exports.deleteUser = async (req, res) => {
     const user = await User.findByPk(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return apiResponse.error(res, {
+        statusCode: 404,
+        message: "User not found"
+      });
     }
 
     await User.destroy({
       where: { id: req.params.id }
     });
 
-    res.status(200).json({ message: "User deleted successfully" });
+    apiResponse.success(res, {
+      message: "User deleted successfully"
+    });
   } catch (err) {
-    res.status(500).json({
-      message: err.message || "Some error occurred while deleting the user."
+    apiResponse.error(res, {
+      message: err.message || "Error deleting user",
+      error: err.stack
     });
   }
 };

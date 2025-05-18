@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const User = sequelize.define("user", {
+  const User = sequelize.define("users", {
     id: {
       type: Sequelize.INTEGER,
       primaryKey: true,
@@ -22,21 +22,21 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: false
     },
-    firstName: {
+    first_name: {
       type: Sequelize.STRING
     },
-    lastName: {
+    last_name: {
       type: Sequelize.STRING
     },
     role: {
       type: Sequelize.ENUM('user', 'admin'),
       defaultValue: 'user'
     },
-    isActive: {
+    is_active: {
       type: Sequelize.BOOLEAN,
       defaultValue: true
     },
-    lastLogin: {
+    last_login: {
       type: Sequelize.DATE
     },
     created_at: {
