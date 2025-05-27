@@ -74,9 +74,10 @@ const initializeDatabase = async () => {
         const user = {
           username: 'admin',
           email: 'admin@admin.com',
-          password: hashedPassword, // Note: You should hash this password!
+          password: hashedPassword,
           first_name: 'Admin',
           last_name: 'CEO',
+          is_verified: true,
           role: 'admin'
         };
 

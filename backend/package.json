@@ -20,9 +20,11 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.1",
+    "nodemailer": "^7.0.3",
     "sequelize": "^6.37.7",
     "sqlite3": "^5.1.7",
-    "stripe": "^18.1.0"
+    "stripe": "^18.1.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

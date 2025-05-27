@@ -1,0 +1,23 @@
+<%- include('./baseTemplate', {
+    subject: 'Verify Your Email Address',
+    appName: process.env.APP_NAME,
+    appUrl: process.env.FRONTEND_URL,
+    logoUrl: `${process.env.FRONTEND_URL}/assets/images/logo.png`,
+}) -%>
+
+<%# Define the body content that will be injected into the base template %>
+<% body %>
+    <h1>Verify Your Email Address</h1>
+    
+    <p>Hello <%= name %>,</p>
+    
+    <p>Thank you for registering with <%= appName %>. Please click the button below to verify your email address:</p>
+    
+    <p style="text-align: center; margin: 30px 0;">
+        <a href="<%= verificationUrl %>" class="button button-blue">Verify Email Address</a>
+    </p>
+    
+    <p>If you did not create an account, no further action is required.</p>
+    
+    <p>Regards,<br>The <%= appName %> Team</p>
+<% %>

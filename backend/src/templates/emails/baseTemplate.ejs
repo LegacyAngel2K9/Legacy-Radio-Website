@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title><%= subject %></title>
+    <style type="text/css" rel="stylesheet" media="all">
+        /* Base styles */
+        * {
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            width: 100% !important;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            -webkit-text-size-adjust: none;
+            background-color: #f5f7fa;
+            color: #2d3748;
+        }
+        
+        /* Email wrapper */
+        .email-wrapper {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+        }
+        
+        .email-content {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+        }
+        
+        /* Header */
+        .email-header {
+            padding: 65px 0;
+            text-align: center;
+        }
+        
+        .logo {
+            max-height: 50px;
+        }
+        
+        /* Email body */
+        .email-body {
+            width: 100%;
+            background-color: #ffffff;
+        }
+        
+        .email-inner {
+            padding: 30px;
+        }
+        
+        /* Typography */
+        h1 {
+            margin-top: 0;
+            color: #1a202c;
+            font-size: 22px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        /* Button */
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #4299e1;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .button-blue {
+            background-color: #4299e1;
+        }
+        
+        .button:hover {
+            background-color: #3182ce;
+        }
+        
+        /* Footer */
+        .email-footer {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #718096;
+            background-color: #ffffff;
+            margin-bottom: 60px;
+        }
+        
+        .footer-links {
+            margin: 10px 0;
+        }
+        
+        .footer-links a {
+            color: #718096;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive styles */
+        @media only screen and (max-width: 600px) {
+            .email-inner {
+                padding: 20px !important;
+            }
+            
+            h1 {
+                font-size: 20px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="center">
+                <table class="email-content" width="100%" cellpadding="0" cellspacing="0">
+                    <!-- Header -->
+                    <tr>
+                        <td class="email-header">
+                            <a href="<%= appUrl %>">
+                                <img src="<%= logoUrl %>" class="logo" alt="<%= appName %> Logo">
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <!-- Email Body -->
+                    <tr>
+                        <td class="email-body" width="100%">
+                            <table class="email-inner" align="center" width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                        <!-- Dynamic content will be injected here -->
+                                        <%- body %>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td>
+                            <table class="email-footer" align="center" width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td class="content-cell">
+                                        <p>
+                                            If you're having trouble clicking the button, copy and paste the URL below into your web browser:
+                                            <br>
+                                            <a href="<%= actionUrl %>" class="break-all"> <%= actionUrl %></a>
+                                        </p>
+                                        <p class="footer-links">
+                                            <a href="<%= appUrl %>">Home</a>
+                                            <a href="<%= appUrl %>/privacy">Privacy</a>
+                                            <a href="<%= appUrl %>/terms">Terms</a>
+                                        </p>
+                                        <p>
+                                            © <%= new Date().getFullYear() %> <%= appName %>. All rights reserved.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

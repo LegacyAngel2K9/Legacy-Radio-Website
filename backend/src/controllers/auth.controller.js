@@ -3,7 +3,10 @@ const User = db.User;
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const apiResponse = require('../utils/apiResponse');
+const emailService = require('../services/emailService');
 
 exports.register = async (req, res) => {
   try {
@@ -48,6 +51,9 @@ exports.register = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(20).toString('hex');
+
     // Create user
     const user = {
       username: req.body.username,
@@ -55,14 +61,23 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       first_name: req.body.first_name,
       last_name: req.body.last_name,
-      role: 'user'
+      role: 'user',
+      verificationToken,
+      isVerified: false
     };
 
     const data = await User.create(user);
 
+    // Send verification email
+    await emailService.sendVerificationEmail(
+      data.email,
+      verificationToken,
+      `${data.first_name} ${data.last_name}`
+    );
+
     // Generate JWT token immediately after registration
     const token = jwt.sign(
-      { id: data.id, role: data.role },
+      { id: data.id, role: data.role, isVerified: false },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
@@ -77,7 +92,8 @@ exports.register = async (req, res) => {
           email: data.email,
           first_name: data.first_name,
           last_name: data.last_name,
-          role: data.role
+          role: data.role,
+          isVerified: false
         },
         token
       }
@@ -91,9 +107,112 @@ exports.register = async (req, res) => {
   }
 };
 
+// Add this new verification endpoint
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return apiResponse.validationError(res, {
+        message: "Verification token is required"
+      });
+    }
+
+    const user = await User.findOne({ where: { verificationToken: token } });
+
+    if (!user) {
+      return apiResponse.error(res, {
+        statusCode: 400,
+        message: "Invalid verification token"
+      });
+    }
+
+    await User.update(
+      {
+        isVerified: true,
+        verificationToken: null
+      },
+      { where: { id: user.id } }
+    );
+
+    apiResponse.success(res, {
+      message: "Email verified successfully. You can now access your dashboard."
+    });
+
+  } catch (err) {
+    apiResponse.error(res, {
+      message: err.message || "Error verifying email",
+      error: err.stack
+    });
+  }
+};
+
+exports.resendVerification = async (req, res) => {
+  try {
+    
+    const { email } = req.body;
+
+    if (!email) {
+      return apiResponse.validationError(res, {
+        message: "Email is required"
+      });
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return apiResponse.error(res, {
+        statusCode: 404,
+        message: "User not found"
+      });
+    }
+
+    if (user.isVerified) {
+      return apiResponse.error(res, {
+        statusCode: 400,
+        message: "Email is already verified"
+      });
+    }
+
+    // Generate new token if none exists
+    const verificationToken = user.verificationToken || crypto.randomBytes(20).toString('hex');
+
+    if (!user.verificationToken) {
+      await User.update(
+        { verificationToken },
+        { where: { id: user.id } }
+      );
+    }
+
+    // Send verification email
+    const verificationUrl = `${process.env.BASE_URL}/auth/verify-email?token=${verificationToken}`;
+
+    await transporter.sendMail({
+      from: `<${process.env.EMAIL_FROM}>`,
+      to: user.email,
+      subject: 'Verify Your Email',
+      html: `
+        <p>Please click the following link to verify your email:</p>
+        <a href="${verificationUrl}">Verify Email</a>
+        <p>If you didn't request this, please ignore this email.</p>
+      `
+    });
+
+    apiResponse.success(res, {
+      message: "Verification email resent. Please check your inbox."
+    });
+
+  } catch (err) {
+    apiResponse.error(res, {
+      message: err.message || "Error resending verification email",
+      error: err.stack
+    });
+  }
+};
+
 exports.login = async (req, res) => {
   try {
-   
+
     // Validate input
     if (!req.body.username || !req.body.password) {
       return apiResponse.validationError(res, {
@@ -130,7 +249,7 @@ exports.login = async (req, res) => {
 
     // Generate token
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, role: user.role, isVerified: user.isVerified },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
@@ -144,7 +263,8 @@ exports.login = async (req, res) => {
           email: user.email,
           first_name: user.first_name,
           last_name: user.last_name,
-          role: user.role
+          role: user.role,
+          isVerified: user.isVerified
         },
         token
       }
