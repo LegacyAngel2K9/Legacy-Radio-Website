@@ -14,6 +14,7 @@ backend/.idea
 /backend/logs/
 /backend/tmp/
 /backend/package-lock.json
+/backend/src/database.sqlite
 
 # Frontend - Node.js
 /frontend/node_modules/

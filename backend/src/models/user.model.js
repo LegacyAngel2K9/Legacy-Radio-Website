@@ -39,6 +39,10 @@ module.exports = (sequelize, Sequelize) => {
     last_login: {
       type: Sequelize.DATE
     },
+    is_verified: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
+    },
     created_at: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,
